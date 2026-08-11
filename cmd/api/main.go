@@ -4,8 +4,8 @@ import (
 	"context"
 	"log"
 
-	"github.com/Its-Delimas/gatekeepers/internals/config"
-	"github.com/Its-Delimas/gatekeepers/internals/db"
+	"github.com/Its-Delimas/gatekeepers/internal/config"
+	"github.com/Its-Delimas/gatekeepers/internal/db"
 )
 
 func main() {
