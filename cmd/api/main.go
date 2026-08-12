@@ -6,6 +6,7 @@ import (
 
 	"github.com/Its-Delimas/gatekeepers/internal/config"
 	"github.com/Its-Delimas/gatekeepers/internal/db"
+	"github.com/Its-Delimas/gatekeepers/internal/db/sqlc"
 )
 
 func main() {
@@ -21,5 +22,17 @@ func main() {
 	}
 	defer pool.Close()
 
-	log.Printf("connected to database, starting server on port %s in %s mode", cfg.Port, cfg.Environment)
+	queries := sqlc.New(pool)
+
+	user, err := queries.CreateUser(ctx, sqlc.CreateUserParams{
+		Email:        "test@gmail.com",
+		PasswordHash: "not-a-real-hash-yet",
+	})
+
+	if err != nil {
+		log.Fatalf("failed to create user: %v", err)
+	}
+	log.Printf("created user: %s (%s)", user.ID, user.Email)
+
+	// log.Printf("connected to database, starting server on port %s in %s mode", cfg.Port, cfg.Environment)
 }
