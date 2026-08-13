@@ -3,6 +3,9 @@ package main
 import (
 	"context"
 	"log"
+	"net/http"
+
+	"github.com/go-chi/chi/v5"
 
 	"github.com/Its-Delimas/gatekeepers/internal/config"
 	"github.com/Its-Delimas/gatekeepers/internal/db"
@@ -24,11 +27,11 @@ func main() {
 	defer pool.Close()
 
 	userService := user.NewService(sqlc.New(pool))
+	userHandler := user.NewHandler(userService)
 
-	newUser, err := userService.Register(ctx, "test2@example.com", "supersecret123")
-	if err != nil {
-		log.Fatalf("registration failed: %v", err)
-	}
+	r := chi.NewRouter()
+	r.Post("/register", userHandler.Register)
 
-	log.Printf("registered user: %s (%s), hash: %s", newUser.ID, newUser.Email, newUser.PasswordHash)
+	log.Printf("listenin on port %s", cfg.Port)
+	log.Fatal(http.ListenAndServe(":"+cfg.Port, r))
 }
