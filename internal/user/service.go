@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/Its-Delimas/gatekeepers/internal/db/sqlc"
+	"github.com/jackc/pgx/v5/pgconn"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -24,12 +25,17 @@ func (s *Service) Register(ctx context.Context, email, password string) (sqlc.Us
 	if err != nil {
 		return sqlc.User{}, fmt.Errorf("failed to hash password: %w", err)
 	}
+
 	user, err := s.queries.CreateUser(ctx, sqlc.CreateUserParams{
 		Email:        email,
 		PasswordHash: string(hash),
 	})
 	if err != nil {
-		return sqlc.User{},fmt.Errorf("failed to create user: %w",err)
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
+			return sqlc.User{}, ErrEmailTaken
+		}
+		return sqlc.User{}, fmt.Errorf("failed to create user: %w", err)
 	}
-	return user,nil
+	return user, nil
 }
