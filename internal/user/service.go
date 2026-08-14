@@ -8,7 +8,6 @@ import (
 	"github.com/Its-Delimas/gatekeepers/internal/db/sqlc"
 	"github.com/jackc/pgx/v5/pgconn"
 	"golang.org/x/crypto/bcrypt"
-	"github.com/google/uuid"
 )
 
 var ErrEmailTaken = errors.New("email is already registered")
@@ -43,13 +42,13 @@ func (s *Service) Register(ctx context.Context, email, password string) (sqlc.Us
 
 var ErrInvalidCredentials = errors.New("invalid email or password")
 
-func (s *Service) Login(ctx context.Context,email,password string)(sqlc.User, error){
-	u, err := s.queries.GetUserByEmail(ctx,email)
+func (s *Service) Login(ctx context.Context, email, password string) (sqlc.User, error) {
+	u, err := s.queries.GetUserByEmail(ctx, email)
 	if err != nil {
 		return sqlc.User{}, ErrInvalidCredentials
 	}
 
-	if err := bcrypt.CompareHashAndPassword([]byte(u.PasswordHash),[]byte(password)); err != nil {
+	if err := bcrypt.CompareHashAndPassword([]byte(u.PasswordHash), []byte(password)); err != nil {
 		return sqlc.User{}, ErrInvalidCredentials
 	}
 	return u, nil

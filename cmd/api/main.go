@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
+	"github.com/Its-Delimas/gatekeepers/internal/auth"
 	"github.com/Its-Delimas/gatekeepers/internal/config"
 	"github.com/Its-Delimas/gatekeepers/internal/db"
 	sqlc "github.com/Its-Delimas/gatekeepers/internal/db/sqlc"
@@ -26,11 +27,13 @@ func main() {
 	}
 	defer pool.Close()
 
+	tokenService := auth.NewTokenService(cfg.JWTSecret)
 	userService := user.NewService(sqlc.New(pool))
-	userHandler := user.NewHandler(userService)
+	userHandler := user.NewHandler(userService, tokenService)
 
 	r := chi.NewRouter()
 	r.Post("/register", userHandler.Register)
+	r.Post("/login", userHandler.Login)
 
 	log.Printf("listenin on port %s", cfg.Port)
 	log.Fatal(http.ListenAndServe(":"+cfg.Port, r))
