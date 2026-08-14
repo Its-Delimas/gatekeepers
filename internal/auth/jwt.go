@@ -35,7 +35,6 @@ func (t *TokenService) GenerateAccessToken(userID uuid.UUID) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to sign token: %w", err)
 	}
-
 	return signed, nil
 }
 
@@ -43,6 +42,9 @@ func (t *TokenService) ValidateAccessToken(tokenString string) (*Claims, error) 
 	claims := &Claims{}
 
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
 		return t.secret, nil
 	})
 	if err != nil {
